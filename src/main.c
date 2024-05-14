@@ -550,6 +550,7 @@ static void handleRadioCmd(struct esbPacket_s *packet)
 #define BOOTLOADER_CMD_GETVBAT    0x04
 #define BOOTLOADER_CMD_LED_ON     0x05
 #define BOOTLOADER_CMD_LED_OFF    0x06
+#define BOOTLOADER_CMD_TO_STM32   0xF1
 
 static void handleBootloaderCmd(struct esbPacket_s *packet)
 {
@@ -597,6 +598,11 @@ static void handleBootloaderCmd(struct esbPacket_s *packet)
         } else {
           NVIC_SystemReset();
         }
+        // 发送给STM32使其进入bootloader
+        memcpy(slTxPacket.data, packet->data, packet->size);
+        slTxPacket.length = packet->size;
+        slTxPacket.type = BOOTLOADER_CMD_TO_STM32;
+        syslinkSend(&slTxPacket);
       }
       break;
     case BOOTLOADER_CMD_ALLOFF:
